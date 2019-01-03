@@ -1,0 +1,40 @@
+<body>
+<h2>Index Page</h2>
+<button onclick="openPopUp()"> Open child popup</button>
+<script>
+    function openPopUp(){
+      // No refresh bar
+      // so no need to worry about losing dynamic script when page refreshes
+     var win_options = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbar=no,resizable,copyhistory=yes,width=960,height=720,left=25,top=25,screenX=25,screenY=25';
+
+      var popUpWindow = window.open('child.html', 'child', win_options);
+      addScriptDynamicallyToPopup(popUpWindow, {
+        key1: 'value1'
+      });
+    }
+
+    function addScriptDynamicallyToPopup(newWindow, dataLayerChild) {
+
+      if (!newWindow || !dataLayerChild) return;
+
+      newWindow.addEventListener('DOMContentLoaded', function() {
+        appendScriptToHead();
+        addDataLayer();
+      });
+
+      function appendScriptToHead() {
+        var head  = newWindow.document.head;
+        var script  = newWindow.document.createElement('script');
+        script.async = true;
+        script.src = 'dynamicScript.js';
+        head.appendChild(script);
+      }
+
+      function addDataLayer() {
+        console.log('addDataLayer');
+        newWindow.dataLayer = newWindow.dataLayer || [];
+        newWindow.dataLayer.push(dataLayerChild);
+      }
+    }
+</script>
+</body>
