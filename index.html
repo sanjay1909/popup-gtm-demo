@@ -1,40 +1,51 @@
-<body>
+<html>
+<head>
+    <title>Main Page</title>
+</head>
+<body name="mainpage">
 <h2>Index Page</h2>
-<button onclick="openPopUp()"> Open child popup</button>
+<button onclick="openPopUp()"> Popup child</button>
 <script>
-    function openPopUp(){
-      // No refresh bar
-      // so no need to worry about losing dynamic script when page refreshes
-     var win_options = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbar=no,resizable,copyhistory=yes,width=960,height=720,left=25,top=25,screenX=25,screenY=25';
 
-      var popUpWindow = window.open('child.html', 'child', win_options);
-      addScriptDynamicallyToPopup(popUpWindow, {
-        key1: 'value1'
+  const CHILD_WINDOW_URL    = 'child.html';
+  const CHILD_WINDOW_NAME   = 'childWindow';
+  const scriptFile = 'dynamicScript.js';
+
+  function openPopUp(){
+    var newWindow = window.open(CHILD_WINDOW_URL, CHILD_WINDOW_NAME);
+    addScriptDynamicallyToPopup(newWindow);
+  }
+
+  function appendScriptToBody(windowToAttach, file) {
+    var body  = windowToAttach.document.body;
+    var script  = windowToAttach.document.createElement('script');
+    script.async = true;
+    script.src = file;
+    body.appendChild(script);
+  }
+
+  function addScriptDynamicallyToPopup(popUpWindow, isReloaded) {
+
+    function reAttachAfterReload(){
+      addScriptDynamicallyToPopup(popUpWindow, true);
+    }
+
+    // fired when user refreshes the page
+    popUpWindow.addEventListener('beforeunload', function (e) {
+      // in current execution context, page reload happens, so delay the attachment to next execution context
+      setTimeout(reAttachAfterReload,0)
+    });
+
+    if(isReloaded){
+      appendScriptToBody(popUpWindow, scriptFile);
+    } else {
+      popUpWindow.addEventListener('DOMContentLoaded', function (e){
+        appendScriptToBody(popUpWindow, scriptFile);
       });
     }
 
-    function addScriptDynamicallyToPopup(newWindow, dataLayerChild) {
 
-      if (!newWindow || !dataLayerChild) return;
-
-      newWindow.addEventListener('DOMContentLoaded', function() {
-        appendScriptToHead();
-        addDataLayer();
-      });
-
-      function appendScriptToHead() {
-        var head  = newWindow.document.head;
-        var script  = newWindow.document.createElement('script');
-        script.async = true;
-        script.src = 'dynamicScript.js';
-        head.appendChild(script);
-      }
-
-      function addDataLayer() {
-        console.log('addDataLayer');
-        newWindow.dataLayer = newWindow.dataLayer || [];
-        newWindow.dataLayer.push(dataLayerChild);
-      }
-    }
+  }
 </script>
 </body>
+</html>
